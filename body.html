@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>XC Bodycam Overlay</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=PT+Mono&family=Roboto+Mono:wght@400;500;600&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Moment -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data-10-year-range.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            color: #E0E0E0;
+            letter-spacing: 0.5px;
+        }
+
+        /* Font options */
+        .bodyfont-ibmplex {
+            font-family: "IBM Plex Mono";
+        }
+
+        .bodyfont-roboto {
+            font-family: "Roboto Mono";
+        }
+
+        .bodyfont-courier {
+            font-family: "Courier Prime";
+        }
+
+        .bodyfont-pt {
+            font-family: "PT Mono";
+        }
+
+        .bodyfont-sharetech {
+            font-family: "Share Tech Mono";
+        }
+
+        @font-face {
+            font-family: 'vcr_osd_monoregular';
+            src: url(FONT/vcr_osd_mono_1.001-webfont.woff2) format('woff2'),
+                url(FONT/vcr_osd_mono_1.001-webfont.woff) format('woff');
+        }
+
+        .bodyfont-vcr {
+            font-family: "vcr_osd_monoregular";
+        }
+
+        .top-right-container {
+            float: right;
+            margin: 20px;
+            padding: 1em;
+            text-align: right;
+            background: rgba(0, 0, 0, .7);
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            line-height: 1.5;
+        }
+
+        .top-right-container.badge-left {
+            float: left;
+        }
+        .top-right-container.badge-left .badge-icon { order: -1; }
+        .top-right-container.badge-left .info-content { order: 1; }
+
+        .badge-icon {
+            height: 120px;
+            /* Adjusted to visually match the text block */
+            width: auto;
+            align-self: center;
+            /* Center vertically within the container */
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+        }
+
+        .info-content {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        /* Blink animation */
+        @keyframes blink {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        .blink {
+            color: #FF3333;
+            animation: blink 1s ease-in-out infinite alternate;
+        }
+
+        #active-units {
+            display: inline-block;
+            min-width: 60px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            vertical-align: bottom;
+            height: 1.5em;
+            /* Match new line height */
+        }
+
+        .slide-text {
+            display: inline-block;
+            animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateY(-12px);
+                filter: blur(2px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                filter: blur(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-right-container" id="overlayContainer">
+        <div class="info-content">
+           REC <i class="fa fa-circle text-danger blink"></i>
+            &nbsp;<span id="camera-label"></span><br>
+
+            <span id="rank"></span><span id="player"></span>
+            [<span id="callsign"></span>]<br>
+            <span id="agency"></span><br>
+            <span id="dt"></span>
+            <span id="ts"></span>
+        </div>
+        <img id="badgeImage"
+             alt="Badge"
+             class="badge-icon">
+    </div>
+
+    <script>
+        (function () {
+            const params = new URLSearchParams(location.search);
+
+            /** @type {{player:string; agency:string; callsign:string; rank:string; tz:string; font:string; badgeUrl:string; badgeSize:string; cameraLabel:string; badgePosition:'left'|'right'; opacity:string}} */
+            const config = {
+                player: (params.get('player') || 'Mat Anee').toUpperCase(),
+                agency: (params.get('agency') || 'Sheriff Department').toUpperCase(),
+                callsign: (params.get('callsign') || '61666').toUpperCase(),
+                rank: (params.get('rank') || '').toUpperCase(),
+                tz: params.get('tz') || moment.tz.guess(),
+                font: params.get('font') || 'roboto',
+                badgeUrl: params.get('badgeUrl') || 'img/Axon.png',
+                badgeSize: params.get('badgeSize') || '120',
+                cameraLabel: (params.get('cameraLabel') || 'Axon Body Cam').toUpperCase(),
+                badgePosition: (params.get('badgePosition') || 'right').toLowerCase(),
+                opacity: params.get('opacity') || '0.7'
+            };
+
+            // Cache DOM lookups to minimize per-tick work
+            const els = {
+                dt: /** @type {HTMLElement | null} */ (document.getElementById('dt')),
+                ts: /** @type {HTMLElement | null} */ (document.getElementById('ts')),
+                player: /** @type {HTMLElement | null} */ (document.getElementById('player')),
+                rank: /** @type {HTMLElement | null} */ (document.getElementById('rank')),
+                agency: /** @type {HTMLElement | null} */ (document.getElementById('agency')),
+                callsign: /** @type {HTMLElement | null} */ (document.getElementById('callsign')),
+                cameraLabel: /** @type {HTMLElement | null} */ (document.getElementById('camera-label')),
+                overlayContainer: /** @type {HTMLElement | null} */ (document.getElementById('overlayContainer')),
+                badgeImage: /** @type {HTMLImageElement | null} */ (document.getElementById('badgeImage'))
+            };
+
+            /** @param {HTMLElement | null} el @param {string} val */
+            const setElText = (el, val) => {
+                if (el && el.textContent !== val) el.textContent = val;
+            };
+
+            const updateClock = () => {
+                const d = moment().tz(config.tz);
+                const dateStr = d.format('DD MMM YYYY').toUpperCase();
+                const timeStr = d.format('HH:mm:ss z').toUpperCase();
+
+                setElText(els.dt, dateStr);
+                setElText(els.ts, timeStr);
+            };
+
+            const init = () => {
+                document.body.classList.add(`bodyfont-${config.font}`);
+
+                if (els.overlayContainer) {
+                    if (config.badgePosition === 'left' || config.badgePosition === 'right') {
+                        els.overlayContainer.classList.add(`badge-${config.badgePosition}`);
+                    }
+                    els.overlayContainer.style.backgroundColor = `rgba(0, 0, 0, ${config.opacity})`;
+                }
+
+                setElText(els.rank, config.rank ? config.rank + ' ' : '');
+                setElText(els.player, config.player);
+                setElText(els.agency, config.agency);
+                setElText(els.callsign, config.callsign);
+                setElText(els.cameraLabel, config.cameraLabel);
+
+                if (els.badgeImage && config.badgeUrl) {
+                    try {
+                        els.badgeImage.src = new URL(config.badgeUrl, location.href).href;
+                    } catch {
+                        els.badgeImage.src = config.badgeUrl;
+                    }
+                    els.badgeImage.style.height = config.badgeSize + 'px';
+                    els.badgeImage.onerror = function () {
+                        this.style.visibility = 'hidden';
+                    };
+                }
+
+                updateClock();
+                window.setInterval(updateClock, 1000);
+            };
+
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+</body>
+
+</html>
