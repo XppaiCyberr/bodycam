@@ -4,19 +4,19 @@ A premium, modern, and highly customizable HUD overlay for police and emergency 
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-* **🎨 Premium UI/UX**: Modern dark glassmorphic design featuring glowing accents and responsive layouts.
-* **🌐 Bilingual Toggle**: Switch between **English** and **Bahasa Indonesia** with a single click.
-* **🛡️ Visual Presets Grid**: Choose badges/logos instantly from a grid of presets (Axon, LSPD, LSSD) or input a custom image URL.
-* **📏 Logo Resizing**: Adjust the height of the badge on the overlay dynamically from 60px to 180px using a range slider.
-* **🎖️ Custom Rank & Name**: Prepend custom officer ranks (e.g. `Sgt.`, `Det.`) next to your name.
-* **⏱️ Real-time Clock**: Automatically parses dates and local times with timezone offsets using Moment.js.
-* **🎥 Transparent HUD**: Perfect for overlays, featuring clean outlines and drop-shadows for high readability over gameplay.
+* **Premium UI/UX**: Modern dark glassmorphic design featuring glowing accents and responsive layouts.
+* **Bilingual Toggle**: Switch between **English** and **Bahasa Indonesia** with a single click.
+* **Visual Presets Grid**: Choose badges/logos instantly from a grid of presets (Axon, LSPD, LSSD) or input a custom image URL.
+* **Logo Resizing**: Adjust the height of the badge on the overlay dynamically from 60px to 180px using a range slider.
+* **Custom Rank & Name**: Prepend custom officer ranks (e.g. `Sgt.`, `Det.`) next to your name.
+* **Real-time Clock**: Automatically parses dates and local times with timezone offsets using Moment.js.
+* **Transparent HUD**: Perfect for overlays, featuring clean outlines and drop-shadows for high readability over gameplay.
 
 ---
 
-## 📽️ OBS Integration Guide
+## OBS Integration Guide
 
 Follow these steps to overlay the real-time bodycam HUD onto your stream or recording:
 
@@ -33,7 +33,7 @@ Follow these steps to overlay the real-time bodycam HUD onto your stream or reco
 
 ---
 
-## 🛠️ Local Hosting Recommendation
+## Local Hosting Recommendation
 
 If you prefer to run the overlay locally rather than hosting it on a remote web server:
 1. Open a terminal in the project directory.
@@ -46,7 +46,7 @@ If you prefer to run the overlay locally rather than hosting it on a remote web 
 
 ---
 
-## 💖 Support the Developer
+## Support the Developer
 
 If you like this project and want to support its development:
 * Donate via [Bagi Bagi](https://bagibagi.co/xppaicyberr)
